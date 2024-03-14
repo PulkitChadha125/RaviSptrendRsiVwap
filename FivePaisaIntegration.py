@@ -1,12 +1,13 @@
-AppName="5P50101877"
-AppSource=21885
-UserID="B8I7uoAKrTv"
-Password="v20Crs1503k"
-UserKey="BqlWZe4zncP6S2WKTHRDw7yUz8L7tCZP"
-EncryptionKey="ZAsxzvvnWK6sj3qxkfsUBYYhievD0Jbq"
+AppName="5P51505350"
+AppSource=22085
+UserID="KDBDDkraajE"
+Password="DFzv7dKMscE"
+UserKey="krBvmN0zGOOIcwemzmOLTBhhrbpLD7xQ"
+EncryptionKey="q6ZwmANtPVL545lbs7jlQkJcGvy2iR6O"
 Validupto="3/30/2050 12:00:00 PM"
 Redirect_URL="Null"
-totpstr="GUYDCMBRHA3TOXZVKBDUWRKZ"
+totpstr="GUYTKMBVGM2TAXZVKBDUWRKZ"
+from datetime import datetime,timedelta
 import pandas_ta as ta
 from py5paisa import FivePaisaClient
 import pyotp,datetime
@@ -22,11 +23,10 @@ def login():
         "USER_KEY":UserKey,
         "ENCRYPTION_KEY":EncryptionKey
         }
-
     twofa = pyotp.TOTP(totpstr)
     twofa = twofa.now()
     client = FivePaisaClient(cred=cred)
-    client.get_totp_session(client_code=50101877,totp=twofa,pin=654321)
+    client.get_totp_session(client_code=51505350,totp=twofa,pin=123456)
     client.get_oauth_session('Your Response Token')
     print(client.get_access_token())
 def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod):
@@ -52,30 +52,6 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod):
     return df.tail(3)
 
 
-#
-# def get_historical_data(timframe,token,RSIPeriod,Spperios,spmul,atrperiod):
-#     global client
-#     from_time=datetime.datetime.now()-datetime.timedelta(days=4)
-#     to_time=datetime.datetime.now()
-#
-#     df=client.historical_data('N','D',token,timframe,from_time,to_time)
-#     df["RSI"] = ta.rsi(close=df["Close"], length=RSIPeriod)
-#     df["VWAP"] = ta.vwap(high=df["High"], low=df["Low"], close=df["Close"],
-#                                  volume=df["Volume"])
-#     colname = f'SUPERT_{int(Spperios)}_{spmul}'
-#     colname2 = f'SUPERTd_{int(Spperios)}_{spmul}'
-#
-#     df["Supertrend Values"] = ta.supertrend(high=df['inth'], low=df['intl'], close=df['intc'], length=Spperios,
-#                                             multiplier=spmul)[colname]
-#     df["Supertrend Signal"] = ta.supertrend(high=df['inth'], low=df['intl'], close=df['intc'], length=Spperios,
-#                                             multiplier=spmul)[colname2]
-#
-#     df['Datetime'] = pd.to_datetime(df['Datetime'])
-#
-#     # Format 'Datetime' column as human-readable
-#     df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
-#     print(df)
-#
 
 def get_live_market_feed():
     global client
@@ -94,10 +70,9 @@ def previousdayclose(code):
 
 def get_ltp(code):
     global client
-    req_list_ = [{"Exch": "N", "ExchType": "C", "ScripCode": code}]
+    req_list_ = [{"Exch": "N", "ExchType": "D", "ScripCode": code}]
     responce=client.fetch_market_feed_scrip(req_list_)
     last_rate = float(responce['Data'][0].get('LastRate', 0))
-
     return last_rate
 
 def buy( ScripCode , Qty, Price,OrderType='B',Exchange='N',ExchangeType='C'):
@@ -144,6 +119,7 @@ def get_position():
 def get_margin():
     global client
     responce= client.margin()
+
     if responce:
         net_available_margin =float (responce[0]['NetAvailableMargin'])
         return net_available_margin
@@ -152,6 +128,19 @@ def get_margin():
         return None
 
 
+def get_active_expiery(symbol):
+    response = client.get_expiry("N", symbol)
+    expiry_dates = []
+
+    for expiry in response['Expiry']:
+        expiry_date_string = expiry['ExpiryDate']
+        expiry_date_numeric = int(expiry_date_string.split("(")[1].split("+")[0]) / 1000
+        epoch = datetime.datetime(1970, 1, 1)
+        expiry_datetime = epoch + timedelta(seconds=expiry_date_numeric)
+        expiry_date = expiry_datetime.strftime('%Y-%m-%d')
+        expiry_dates.append(expiry_date)
+
+    return expiry_dates
 
 
 

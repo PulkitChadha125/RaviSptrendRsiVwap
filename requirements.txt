@@ -1,0 +1,7 @@
+pya3==1.0.29
+requests==2.31.0
+pandas==1.1.5
+websocket-client==1.7.0
+pandas_ta
+py5paisa
+pyotp

@@ -33,6 +33,87 @@ def get_ltp(token):
     print(responce)
 
 
+def option_contract(exch,symbol,expiry_date,strike,call):
+    global alice
+
+    res= alice.get_instrument_for_fno(exch=exch, symbol=symbol, expiry_date=expiry_date, is_fut=False, strike=strike,
+                                     is_CE=call)
+    print("res: ",res)
+    return res
+
+def chek():
+    return alice.get_instrument_by_symbol('NSE', 'INFY')
+
+
+def buy(quantity,exch,symbol, expiry_date, strike, call,producttype):
+    global alice
+
+    if producttype=="D":
+        PT=ProductType.Delivery
+    else:
+        PT = ProductType.Intraday
+
+    res = alice.place_order(transaction_type=TransactionType.Buy,
+                      instrument=option_contract(exch,symbol,expiry_date,strike,call),
+                      quantity=quantity,
+                      order_type=OrderType.Market,
+                      product_type=PT,
+                      price=0.0,
+                      trigger_price=None,
+                      stop_loss=None,
+                      square_off=None,
+                      trailing_sl=None,
+                      is_amo=False,
+                      order_tag='Programetix Automation')
+
+    print("Buy order res: ",res)
+
+def buyexit(quantity,exch,symbol, expiry_date, strike, call,producttype):
+    global alice
+    if producttype=="D":
+        PT=ProductType.Delivery
+    else:
+        PT = ProductType.Intraday
+    res = alice.place_order(transaction_type=TransactionType.Sell,
+                            instrument=option_contract(exch, symbol, expiry_date, strike, call),
+                            quantity=quantity,
+                            order_type=OrderType.Market,
+                            product_type=PT,
+                            price=0.0,
+                            trigger_price=None,
+                            stop_loss=None,
+                            square_off=None,
+                            trailing_sl=None,
+                            is_amo=False,
+                            order_tag='Programetix Automation')
+
+    print("BuyExit order res: ", res)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
