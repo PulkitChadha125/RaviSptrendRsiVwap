@@ -29,7 +29,7 @@ def login():
     client.get_totp_session(client_code=51505350,totp=twofa,pin=123456)
     client.get_oauth_session('Your Response Token')
     print(client.get_access_token())
-def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod):
+def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,symbol):
     global client
     from_time = datetime.datetime.now() - datetime.timedelta(days=5)
     to_time = datetime.datetime.now()
@@ -47,7 +47,10 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod):
     df["ATR_VALUE"] = ta.atr(high=df['High'], low=df['Low'], close=df['Close'],length=atrperiod)
     df.reset_index(inplace=True)
     df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    df.to_csv('check.csv', index=False)
+    if symbol=="NIFTY":
+        df.to_csv('NIFTY.csv', index=False)
+    if symbol=="BANKNIFTY":
+        df.to_csv('BANKNIFTY.csv', index=False)
 
     return df.tail(3)
 

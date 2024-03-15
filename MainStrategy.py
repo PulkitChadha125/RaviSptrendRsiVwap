@@ -3,6 +3,7 @@ import time
 import traceback
 import pandas as pd
 from pathlib import Path
+
 import pyotp
 from datetime import datetime, timedelta, timezone
 
@@ -117,12 +118,15 @@ def get_user_settings():
                 'RsiCondition2': None,
                 "order_token":None,
                 "optioncontract":None,
-                "PRODUCT_TYPE":row['PRODUCT_TYPE'],
+                "producttype":row['PRODUCT_TYPE'],
                 "INITIAL_TRADE":None,
                 "callstrike":None,
                 "putstrike": None,
                 "currstrike":None,
                 "TradingEnable":True,
+                "BUY":False,
+                "SHORT" : False,
+
 
 
             }
@@ -170,7 +174,6 @@ def get_option_contract(Symbol, Strike,Option_Type,Instrument_Type ,Expiry):
     if not filtered_df.empty:
         # Assuming 'Token' is the column you want to retrieve
         token_value = filtered_df['Token'].values[0]
-        print(token_value)
         return token_value
     else:
         print("No matching contract found.")
@@ -187,7 +190,7 @@ def main_strategy ():
             timestamp = datetime.now()
             timestamp = timestamp.strftime("%d/%m/%Y %H:%M:%S")
             if isinstance(symbol_value, str):
-                ExpieryList = FivePaisaIntegration.get_active_expiery(symbol="BANKNIFTY")
+                ExpieryList = FivePaisaIntegration.get_active_expiery(symbol=symbol)
                 present_date = datetime.now().strftime('%Y-%m-%d')
 
                 if ExpieryList[0]==present_date:
@@ -195,7 +198,7 @@ def main_strategy ():
                 else:
                     Expiery=ExpieryList[0]
 
-                print("Expiery: ",Expiery)
+                # print(f"Symbol= {symbol}, exp={Expiery}")
                 if params['Symbol'] == "NIFTY":
                     token = 36612
 
@@ -212,8 +215,8 @@ def main_strategy ():
                                                                    RSIPeriod=params['RSI_PERIOD'],
                                                                    Spperios=params['SUPERTREND_PERIOD'],
                                                                    spmul=params['SUPERTREND_MULTIPLIER'],
-                                                                   atrperiod=params['ATR_PERIOD'] )
-                    print(f"sym={symbol}, data ={data}")
+                                                                   atrperiod=params['ATR_PERIOD'],symbol= params['Symbol'])
+                    # print(f"sym={symbol}, data ={data}")
                     last_two_rows = data.tail(2)
                     second_last_candle = last_two_rows.iloc[-2]
                     last_candle = last_two_rows.iloc[-1]
@@ -256,78 +259,85 @@ def main_strategy ():
                 except Exception as e:
                     print("Error happened in Main strategy loop: ", str(e))
                     traceback.print_exc()
-            print("token: ",token)
+
             ltp=FivePaisaIntegration.get_ltp(token)
-            print("ltp: ",ltp)
+            print(f"Symbol:{symbol} , ltp:{ltp} ")
 
             if params['rsi2']<=params["RSI_BUY_VALUE"] and params['rsi1']>params["RSI_BUY_VALUE"] and params['supertrendvalue1']== 1 and \
-                params['close'] > params['vwap'] and   params["TradingEnable"]==True:
+                params['close'] > params['vwap'] and   params["TradingEnable"]==True and params["BUY"]==False:
                 if params['INITIAL_TRADE'] == "SHORT":
                     AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
                                          strike=params["putstrike"], call=True,producttype=params["producttype"])
                 params['Trade']="BUY"
+                params["BUY"]= True
+                params["SHORT"]=False
                 if params["OPTION_CONTRACT_TYPE"] == "ATM":
                     strike = custom_round(int(float(ltp)), symbol)
                     callstrike = strike
+                    params["callstrike"] = callstrike
 
                 if params["OPTION_CONTRACT_TYPE"] == "ITM":
                     strike = custom_round(int(float(ltp)), symbol)
                     callstrike = int(strike) - int(params["strike_distance"])
+                    params["callstrike"] = callstrike
 
                 if params["OPTION_CONTRACT_TYPE"] == "OTM":
                     strike = custom_round(int(float(ltp)), symbol)
                     callstrike = int(strike) + int(params["strike_distance"])
+                    params["callstrike"] = callstrike
 
-                params[ "callstrike"] = callstrike
+
                 params["putstrike"] = None
-                params["currstrike"] = callstrike
-                result = AliceBlueIntegration.option_contract(exch="NFO",symbol=symbol, expiry_date=Expiery, strike=callstrike, call=True)
+                params["currstrike"] = params[ "callstrike"]
+                result = AliceBlueIntegration.option_contract(exch="NFO",symbol=symbol, expiry_date=Expiery, strike=params[ "callstrike"] , call=True)
                 token_value = result.token
                 name_value = result.name
                 params["order_token"]= token_value
                 params["optioncontract"]= name_value
-
-                print("Token:", token_value)
-                print("Name:", name_value)
-
                 params['Breakeven'] = ltp + params['atr']
                 params['Stoploss'] = params['low']
                 params['ep']= ltp
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
-                AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
-                                         strike=callstrike, call=True,producttype=params["producttype"])
-                orderlog =f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
+                orderlog = f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
+                AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
+                                         strike=params[ "callstrike"], call=True,producttype=params["producttype"])
+
                 params["INITIAL_TRADE"] = "BUY"
 
             if params['rsi2']>=params["RSI_SELL_VALUE"] and params['rsi1']<params["RSI_SELL_VALUE"] and params['supertrendvalue1']== -1 and \
-                params['close'] < params['vwap'] and  params["TradingEnable"]==True:
-                params['Trade']="SHORT"
+                params['close'] < params['vwap'] and  params["TradingEnable"]==True and params["SHORT"] == False:
+
                 if params['INITIAL_TRADE'] == "BUY":
                     AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
                                          strike=params["callstrike"], call=True,producttype=params["producttype"])
                 if params["OPTION_CONTRACT_TYPE"] == "ATM":
                     strike = custom_round(int(float(ltp)), symbol)
                     putstrike = strike
+                    params["putstrike"] = putstrike
 
 
                 if params["OPTION_CONTRACT_TYPE"] == "ITM":
                     strike = custom_round(int(float(ltp)),symbol)
                     putstrike = int(strike) + int(params["strike_distance"])
+                    params["putstrike"] = putstrike
 
 
                 if params["OPTION_CONTRACT_TYPE"] == "OTM":
                     strike = custom_round(int(float(ltp)),symbol)
                     putstrike = int(strike) - int(params["strike_distance"])
+                    params["putstrike"] = putstrike
 
 
                 params["callstrike"] = None
-                params["putstrike"] = putstrike
-                params["currstrike"] = putstrike
+                params['Trade'] = "SHORT"
+                params["BUY"] = False
+                params["SHORT"] = True
+                params["currstrike"] = params["putstrike"]
                 result = AliceBlueIntegration.option_contract(exch="NFO", symbol=symbol, expiry_date=Expiery,
-                                                              strike=putstrike, call=False)
+                                                              strike=params["putstrike"] , call=False)
                 token_value = result.token
                 name_value = result.name
 
@@ -342,34 +352,38 @@ def main_strategy ():
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
                 orderlog = f'{timestamp} Sell order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
-                AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
-                                         strike=callstrike, call=False,producttype=params["producttype"])
                 print(orderlog)
                 write_to_order_logs(orderlog)
+                AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
+                                         strike=params["putstrike"], call=False,producttype=params["producttype"])
+
                 params["INITIAL_TRADE"] = "SHORT"
 
     #         exit logic coding
             if params['Trade']=="BUY" and params['supertrendvalue1']== -1 and params['supertrendvalue2']== 1 :
                 params['Trade']=None
                 params['INITIAL_TRADE']=None
-                AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
-                                         strike=callstrike, call=True,producttype=params["producttype"])
                 orderlog = f'{timestamp} Supertrend switch buy order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
+                AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
+                                         strike=params["callstrike"], call=True,producttype=params["producttype"])
+
 
             if params['Trade']=="BUY" and params['close']< params['vwap']  and params['close2'] > params["vwap2"]== 1 :
                 params['Trade']=None
                 params['INITIAL_TRADE'] = None
-                AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
-                                             expiry_date=Expiery,
-                                             strike=callstrike, call=True,producttype=params["producttype"])
                 orderlog = f'{timestamp} VWAP buy order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
+                AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
+                                             expiry_date=Expiery,
+                                             strike=params["callstrike"], call=True,producttype=params["producttype"])
+
 
             if params['Trade'] == "BUY" and params['close'] >= params['Breakeven'] and params['Breakeven']>0:
                 params['Stoploss']=params['ep']
+                params['Breakeven'] =params['close']+params['atr']
                 orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -379,7 +393,7 @@ def main_strategy ():
                 params['INITIAL_TRADE'] = None
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
-                                             strike=callstrike, call=True,producttype=params["producttype"])
+                                             strike=params["callstrike"], call=True,producttype=params["producttype"])
                 orderlog = f'{timestamp} Stoploss executed @ buy trade @ {symbol}, ltp = {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -391,7 +405,7 @@ def main_strategy ():
                 params['INITIAL_TRADE'] = None
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
-                                             strike=callstrike, call=False,producttype=params["producttype"])
+                                             strike=params["putstrike"] , call=False,producttype=params["producttype"])
                 orderlog = f'{timestamp} Supertrend switch sell order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -401,13 +415,14 @@ def main_strategy ():
                 params['INITIAL_TRADE'] = None
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
-                                             strike=callstrike, call=False,producttype=params["producttype"])
+                                             strike=params["putstrike"] , call=False,producttype=params["producttype"])
                 orderlog = f'{timestamp} VWAP sell order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
             if params['Trade'] == "SHORT" and params['close'] <= params['Breakeven'] and params['Breakeven']>0:
                 params['Stoploss']=params['ep']
+                params['Breakeven'] =params['close']-params['atr']
                 orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -417,7 +432,7 @@ def main_strategy ():
                 params['INITIAL_TRADE'] = None
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
-                                             strike=callstrike, call=False,producttype=params["producttype"])
+                                             strike=params["putstrike"] , call=False,producttype=params["producttype"])
                 orderlog = f'{timestamp} Stoploss executed @ sell trade @ {symbol}, ltp = {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -433,7 +448,7 @@ def main_strategy ():
                 params['INITIAL_TRADE'] = None
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
-                                             strike=callstrike, call=False,producttype=params["producttype"])
+                                             strike=params["callstrike"], call=False,producttype=params["producttype"])
                 orderlog = f'{timestamp} Rsi Exit Buy  @ {symbol}, ltp = {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -448,7 +463,7 @@ def main_strategy ():
                 params['INITIAL_TRADE'] = None
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
-                                             strike=callstrike, call=False,producttype=params["producttype"])
+                                             strike=params["putstrike"] , call=False,producttype=params["producttype"])
                 orderlog = f'{timestamp} Rsi Exit sell  @ {symbol}, ltp = {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
