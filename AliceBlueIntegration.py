@@ -128,6 +128,6 @@ def get_historical(token):
     indices = False  # For Getting index data
     historical_data = alice.get_historical(instrument, from_datetime, to_datetime, interval, indices)
     df = pd.DataFrame(historical_data)
-    df.to_csv("Check.csv")
+    df.to_csv("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\Check.csv")
     return df
 

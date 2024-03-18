@@ -48,9 +48,9 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
     df.reset_index(inplace=True)
     df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
     if symbol=="NIFTY":
-        df.to_csv('NIFTY.csv', index=False)
+        df.to_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\NIFTY.csv', index=False)
     if symbol=="BANKNIFTY":
-        df.to_csv('BANKNIFTY.csv', index=False)
+        df.to_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\BANKNIFTY.csv', index=False)
 
     return df.tail(3)
 
