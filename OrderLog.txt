@@ -1,5 +1,0 @@
-
-18/03/2024 13:57:02 Buy order executed @ BANKNIFTY @ 46782.7, option contract= BANKNIFTY20MAR24C46800
-18/03/2024 13:58:03 Stoploss executed @ buy trade @ BANKNIFTY, ltp = 46774.95, option contract= BANKNIFTY20MAR24C46800
-18/03/2024 14:32:03 Buy order executed @ BANKNIFTY @ 46848.9, option contract= BANKNIFTY20MAR24C46800
-18/03/2024 14:41:04 Stoploss executed @ buy trade @ BANKNIFTY, ltp = 46841.3, option contract= BANKNIFTY20MAR24C46800

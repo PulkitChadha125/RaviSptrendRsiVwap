@@ -219,7 +219,7 @@ def main_strategy():
             if datetime.now() >= params["runtime"]:
                 try:
                     if params["cool"] == True:
-                        time.sleep(int(2))
+                        time.sleep(int(1))
 
                     data = FivePaisaIntegration.get_historical_data(timframe=str(params['Timeframe']),
                                                                     token=token,
@@ -232,6 +232,9 @@ def main_strategy():
                     last_two_rows = data.tail(2)
                     second_last_candle = last_two_rows.iloc[-2]
                     last_candle = last_two_rows.iloc[-1]
+
+
+                    print("last_two_rows: ", last_two_rows)
 
                     # print(last_two_rows)
                     candletime=last_candle['Datetime']

@@ -10,7 +10,7 @@ totpstr="GUYTKMBVGM2TAXZVKBDUWRKZ"
 from datetime import datetime,timedelta
 import pandas_ta as ta
 from py5paisa import FivePaisaClient
-import pyotp,datetime
+import pyotp
 import pandas as pd
 client=None
 def login():
@@ -31,8 +31,30 @@ def login():
     print(client.get_access_token())
 def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,symbol):
     global client
-    from_time = datetime.datetime.now() - datetime.timedelta(days=5)
-    to_time = datetime.datetime.now()
+    current_time = datetime.now()
+    if timframe == "1m":
+        delta_minutes = 1
+        delta_minutes2 = 2
+    elif timframe == "3m":
+        delta_minutes = 3
+        delta_minutes2 = 6
+    elif timframe == "5m":
+        delta_minutes = 5
+        delta_minutes2 = 10
+    elif timframe == "15m":
+        delta_minutes = 15
+        delta_minutes2 = 30
+
+    desired_time1 = current_time - timedelta(minutes=delta_minutes)
+    desired_time1 = desired_time1.replace(second=0)
+    desired_time_str1 = desired_time1.strftime('%Y-%m-%d %H:%M:%S')
+
+    desired_time2 = current_time - timedelta(minutes=delta_minutes2)
+    desired_time2 = desired_time2.replace(second=0)
+    desired_time_str2 = desired_time2.strftime('%Y-%m-%d %H:%M:%S')
+
+    from_time = datetime.now() - timedelta(days=5)
+    to_time = datetime.now()
     df = client.historical_data('N', 'D', token, timframe, from_time, to_time)
     df['Datetime'] = pd.to_datetime(df['Datetime'])
     df.set_index('Datetime', inplace=True)
@@ -47,12 +69,19 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
     df["ATR_VALUE"] = ta.atr(high=df['High'], low=df['Low'], close=df['Close'],length=atrperiod)
     df.reset_index(inplace=True)
     df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+
+
     if symbol=="NIFTY":
         df.to_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\NIFTY.csv', index=False)
     if symbol=="BANKNIFTY":
         df.to_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\BANKNIFTY.csv', index=False)
 
-    return df.tail(3)
+    last_3_rows = df.tail(3)
+    desired_rows = last_3_rows[
+        (last_3_rows['Datetime'] == desired_time_str1) | (last_3_rows['Datetime'] == desired_time_str2)]
+
+    return desired_rows
 
 
 
@@ -138,7 +167,7 @@ def get_active_expiery(symbol):
     for expiry in response['Expiry']:
         expiry_date_string = expiry['ExpiryDate']
         expiry_date_numeric = int(expiry_date_string.split("(")[1].split("+")[0]) / 1000
-        epoch = datetime.datetime(1970, 1, 1)
+        epoch = datetime(1970, 1, 1)
         expiry_datetime = epoch + timedelta(seconds=expiry_date_numeric)
         expiry_date = expiry_datetime.strftime('%Y-%m-%d')
         expiry_dates.append(expiry_date)
