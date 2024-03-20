@@ -230,11 +230,10 @@ def main_strategy():
                                                                     symbol=params['Symbol'])
                     # print(f"sym={symbol}, data ={data}")
                     last_two_rows = data.tail(2)
+
                     second_last_candle = last_two_rows.iloc[-2]
                     last_candle = last_two_rows.iloc[-1]
 
-
-                    print("last_two_rows: ", last_two_rows)
 
                     # print(last_two_rows)
                     candletime=last_candle['Datetime']
@@ -279,6 +278,8 @@ def main_strategy():
                     traceback.print_exc()
 
             ltp = FivePaisaIntegration.get_ltp(token)
+            # open =FivePaisaIntegration.get_open_current_candle(token)
+            # print("open: ",open)
             print(
                 f"Candletime: {params['candletime'] }, Symbol:{symbol} , ltp:{ltp} ,Rsi1= {params['rsi1']},Rsi2= {params['rsi2']},supertrendvalue1= {params['supertrendvalue1']},"
                 f"vwap= {params['vwap']},close={params['close']},params['INITIAL_TRADE']: {params['INITIAL_TRADE']},buy={params['BUY'] },sell={params['SHORT']}"
@@ -331,7 +332,7 @@ def main_strategy():
                 params['ep'] = ltp
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
-                orderlog = f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
+                orderlog = f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]},atr value={params["TradeAtr"] } ,initial sl={params["Stoploss"] },next tsl level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
@@ -385,7 +386,7 @@ def main_strategy():
                 params['ep'] = ltp
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
-                orderlog = f'{timestamp} Sell order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
+                orderlog = f'{timestamp} Sell order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]},atr value={params["TradeAtr"] } ,initial sl={params["Stoploss"] },next tsl level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
@@ -401,6 +402,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 orderlog = f'{timestamp} Supertrend switch buy order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -415,6 +418,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 orderlog = f'{timestamp} VWAP buy order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -428,7 +433,7 @@ def main_strategy():
             ):
                 params['Stoploss'] = params['Stoploss'] + params["TradeAtr"]
                 params['Breakeven'] = params['close'] + params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}'
+                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol}  stoploss = : {params["Stoploss"]},atr value={params["TradeAtr"] } ,next tsl level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
@@ -438,6 +443,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["callstrike"], call=True, producttype=params["producttype"])
@@ -452,6 +459,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
@@ -466,6 +475,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
@@ -480,7 +491,7 @@ def main_strategy():
             ):
                 params['Stoploss'] = params['Stoploss'] - params["TradeAtr"]
                 params['Breakeven'] = params['close'] - params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}'
+                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss = : {params["Stoploss"]},atr value={params["TradeAtr"] } ,next tsl level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
@@ -490,6 +501,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
@@ -511,6 +524,8 @@ def main_strategy():
                 params['RsiCondition2'] = True
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["callstrike"], call=False, producttype=params["producttype"])
@@ -528,6 +543,8 @@ def main_strategy():
                 params['RsiCondition2'] = True
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
@@ -571,8 +588,6 @@ def time_based_exit():
 #                                      strike=43300, call=True,producttype="I")
 #
 # print(res)
-
-
 while True:
     StartTime = credentials_dict.get('StartTime')
     Stoptime = credentials_dict.get('Stoptime')

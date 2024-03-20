@@ -73,9 +73,9 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
 
 
     if symbol=="NIFTY":
-        df.to_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\NIFTY.csv', index=False)
+        df.to_csv('NIFTY.csv', index=False)
     if symbol=="BANKNIFTY":
-        df.to_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\BANKNIFTY.csv', index=False)
+        df.to_csv('BANKNIFTY.csv', index=False)
 
     last_3_rows = df.tail(3)
     desired_rows = last_3_rows[
@@ -98,6 +98,13 @@ def previousdayclose(code):
     responce=client.fetch_market_feed_scrip(req_list_)
     pclose_value = float(responce['Data'][0]['PClose'])
     return pclose_value
+
+def get_open_current_candle(code):
+    global client
+    req_list_ = [{"Exch": "N", "ExchType": "D", "ScripCode": code}]
+    responce = client.fetch_market_feed_scrip(req_list_)
+    print(responce)
+    return responce
 
 
 def get_ltp(code):

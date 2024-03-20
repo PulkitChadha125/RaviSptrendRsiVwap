@@ -401,6 +401,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 orderlog = f'{timestamp} Supertrend switch buy order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -415,6 +417,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 orderlog = f'{timestamp} VWAP buy order exit @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
@@ -438,6 +442,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["callstrike"], call=True, producttype=params["producttype"])
@@ -452,6 +458,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
@@ -466,6 +474,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
@@ -490,6 +500,8 @@ def main_strategy():
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
@@ -511,6 +523,8 @@ def main_strategy():
                 params['RsiCondition2'] = True
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["callstrike"], call=False, producttype=params["producttype"])
@@ -528,6 +542,8 @@ def main_strategy():
                 params['RsiCondition2'] = True
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
+                params["BUY"] = False
+                params["SHORT"] = False
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["putstrike"], call=False, producttype=params["producttype"])
