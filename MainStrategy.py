@@ -13,6 +13,7 @@ AliceBlueIntegration.get_nfo_instruments()
 
 
 def get_zerodha_credentials():
+    delete_file_contents("OrderLog.txt")
     credentials = {}
     try:
         df = pd.read_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\MainSettings.csv')
