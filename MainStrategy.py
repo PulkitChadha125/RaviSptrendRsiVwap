@@ -11,9 +11,18 @@ FivePaisaIntegration.login()
 AliceBlueIntegration.login()
 AliceBlueIntegration.get_nfo_instruments()
 
-
+def delete_file_contents(file_name):
+    try:
+        # Open the file in write mode, which truncates it (deletes contents)
+        with open(file_name, 'w') as file:
+            file.truncate(0)
+        print(f"Contents of {file_name} have been deleted.")
+    except FileNotFoundError:
+        print(f"File {file_name} not found.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 def get_zerodha_credentials():
-    delete_file_contents("OrderLog.txt")
+    delete_file_contents("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\OrderLog.txt")
     credentials = {}
     try:
         df = pd.read_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\MainSettings.csv')
@@ -66,16 +75,7 @@ def write_to_order_logs(message):
         file.write(message + '\n')
 
 
-def delete_file_contents(file_name):
-    try:
-        # Open the file in write mode, which truncates it (deletes contents)
-        with open(file_name, 'w') as file:
-            file.truncate(0)
-        print(f"Contents of {file_name} have been deleted.")
-    except FileNotFoundError:
-        print(f"File {file_name} not found.")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+
 
 
 result_dict = {}
@@ -429,17 +429,17 @@ def main_strategy():
 
             if (
                     params['Trade'] == "BUY" and
-                    float(params['close']) >= float(params['Breakeven']) > 0
+                    float(ltp) >= float(params['Breakeven']) > 0
             ):
                 params['Stoploss'] = params['Stoploss'] + params["TradeAtr"]
-                params['Breakeven'] = params['close'] + params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}'
+                params['Breakeven'] = float(ltp) + params["TradeAtr"]
+                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}, ltp: {ltp}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
             if (
                     params['Trade'] == "BUY" and
-                    float(params['close']) <= float(params['Stoploss'])
+                    float(ltp) <= float(params['Stoploss'])
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
@@ -486,18 +486,18 @@ def main_strategy():
 
             if (
                     params['Trade'] == "SHORT" and
-                    float(params['close']) <= float(params['Breakeven']) and
+                    float(ltp) <= float(params['Breakeven']) and
                     float(params['Breakeven']) > 0
             ):
                 params['Stoploss'] = params['Stoploss'] - params["TradeAtr"]
-                params['Breakeven'] = params['close'] - params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}'
+                params['Breakeven'] = float(ltp) - params["TradeAtr"]
+                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}, ltp: {ltp}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
             if (
                     params['Trade'] == "SHORT" and
-                    float(params['close']) >= float(params['Stoploss'])
+                    float(ltp) >= float(params['Stoploss'])
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None

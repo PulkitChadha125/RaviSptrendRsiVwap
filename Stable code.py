@@ -11,12 +11,21 @@ FivePaisaIntegration.login()
 AliceBlueIntegration.login()
 AliceBlueIntegration.get_nfo_instruments()
 
-
+def delete_file_contents(file_name):
+    try:
+        # Open the file in write mode, which truncates it (deletes contents)
+        with open(file_name, 'w') as file:
+            file.truncate(0)
+        print(f"Contents of {file_name} have been deleted.")
+    except FileNotFoundError:
+        print(f"File {file_name} not found.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 def get_zerodha_credentials():
-    delete_file_contents("OrderLog.txt")
+    delete_file_contents("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\OrderLog.txt")
     credentials = {}
     try:
-        df = pd.read_csv('MainSettings.csv')
+        df = pd.read_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\MainSettings.csv')
         for index, row in df.iterrows():
             title = row['Title']
             value = row['Value']
@@ -62,20 +71,11 @@ def custom_round(price, symbol):
 
 
 def write_to_order_logs(message):
-    with open('OrderLog.txt', 'a') as file:  # Open the file in append mode
+    with open('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\OrderLog.txt', 'a') as file:  # Open the file in append mode
         file.write(message + '\n')
 
 
-def delete_file_contents(file_name):
-    try:
-        # Open the file in write mode, which truncates it (deletes contents)
-        with open(file_name, 'w') as file:
-            file.truncate(0)
-        print(f"Contents of {file_name} have been deleted.")
-    except FileNotFoundError:
-        print(f"File {file_name} not found.")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+
 
 
 result_dict = {}
@@ -84,7 +84,7 @@ result_dict = {}
 def get_user_settings():
     global result_dict
     try:
-        csv_path = 'TradeSettings.csv'
+        csv_path = 'C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\TradeSettings.csv'
         df = pd.read_csv(csv_path)
         df.columns = df.columns.str.strip()
         result_dict = {}
@@ -173,7 +173,7 @@ def determine_min(minstr):
 
 
 def get_option_contract(Symbol, Strike, Option_Type, Instrument_Type, Expiry):
-    df = pd.read_csv("NFO.csv")
+    df = pd.read_csv("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\NFO.csv")
     filtered_df = df[
         (df['Symbol'] == Symbol) &
         (df['Strike Price'] == Strike) &
@@ -231,10 +231,11 @@ def main_strategy():
                                                                     symbol=params['Symbol'])
                     # print(f"sym={symbol}, data ={data}")
                     last_two_rows = data.tail(2)
-
                     second_last_candle = last_two_rows.iloc[-2]
                     last_candle = last_two_rows.iloc[-1]
 
+
+                    print("last_two_rows: ", last_two_rows)
 
                     # print(last_two_rows)
                     candletime=last_candle['Datetime']
@@ -279,8 +280,6 @@ def main_strategy():
                     traceback.print_exc()
 
             ltp = FivePaisaIntegration.get_ltp(token)
-            # open =FivePaisaIntegration.get_open_current_candle(token)
-            # print("open: ",open)
             print(
                 f"Candletime: {params['candletime'] }, Symbol:{symbol} , ltp:{ltp} ,Rsi1= {params['rsi1']},Rsi2= {params['rsi2']},supertrendvalue1= {params['supertrendvalue1']},"
                 f"vwap= {params['vwap']},close={params['close']},params['INITIAL_TRADE']: {params['INITIAL_TRADE']},buy={params['BUY'] },sell={params['SHORT']}"
@@ -333,7 +332,7 @@ def main_strategy():
                 params['ep'] = ltp
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
-                orderlog = f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]},atr value={params["TradeAtr"] } ,initial sl={params["Stoploss"] },next tsl level={params["Breakeven"]}'
+                orderlog = f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
@@ -387,7 +386,7 @@ def main_strategy():
                 params['ep'] = ltp
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
-                orderlog = f'{timestamp} Sell order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]},atr value={params["TradeAtr"] } ,initial sl={params["Stoploss"] },next tsl level={params["Breakeven"]}'
+                orderlog = f'{timestamp} Sell order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
@@ -430,17 +429,17 @@ def main_strategy():
 
             if (
                     params['Trade'] == "BUY" and
-                    float(params['close']) >= float(params['Breakeven']) > 0
+                    float(ltp) >= float(params['Breakeven']) > 0
             ):
                 params['Stoploss'] = params['Stoploss'] + params["TradeAtr"]
-                params['Breakeven'] = params['close'] + params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol}  stoploss = : {params["Stoploss"]},atr value={params["TradeAtr"] } ,next tsl level={params["Breakeven"]}'
+                params['Breakeven'] = float(ltp) + params["TradeAtr"]
+                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}, ltp: {ltp}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
             if (
                     params['Trade'] == "BUY" and
-                    float(params['close']) <= float(params['Stoploss'])
+                    float(ltp) <= float(params['Stoploss'])
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
@@ -487,18 +486,18 @@ def main_strategy():
 
             if (
                     params['Trade'] == "SHORT" and
-                    float(params['close']) <= float(params['Breakeven']) and
+                    float(ltp) <= float(params['Breakeven']) and
                     float(params['Breakeven']) > 0
             ):
                 params['Stoploss'] = params['Stoploss'] - params["TradeAtr"]
-                params['Breakeven'] = params['close'] - params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss = : {params["Stoploss"]},atr value={params["TradeAtr"] } ,next tsl level={params["Breakeven"]}'
+                params['Breakeven'] = float(ltp) - params["TradeAtr"]
+                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}, ltp: {ltp}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
             if (
                     params['Trade'] == "SHORT" and
-                    float(params['close']) >= float(params['Stoploss'])
+                    float(ltp) >= float(params['Stoploss'])
             ):
                 params['Trade'] = None
                 params['INITIAL_TRADE'] = None
@@ -589,6 +588,8 @@ def time_based_exit():
 #                                      strike=43300, call=True,producttype="I")
 #
 # print(res)
+
+
 while True:
     StartTime = credentials_dict.get('StartTime')
     Stoptime = credentials_dict.get('Stoptime')
