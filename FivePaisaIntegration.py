@@ -53,7 +53,7 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
     desired_time2 = desired_time2.replace(second=0)
     desired_time_str2 = desired_time2.strftime('%Y-%m-%d %H:%M:%S')
 
-    from_time = datetime.now() - timedelta(days=5)
+    from_time = datetime.now() - timedelta(days=6)
     to_time = datetime.now()
     df = client.historical_data('N', 'D', token, timframe, from_time, to_time)
     df['Datetime'] = pd.to_datetime(df['Datetime'])
@@ -66,7 +66,7 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
                                             multiplier=spmul)[colname]
     df["Supertrend Signal"] = ta.supertrend(high=df['High'], low=df['Low'], close=df['Close'], length=Spperios,
                                             multiplier=spmul)[colname2]
-    df["ATR_VALUE"] = ta.atr(high=df['High'], low=df['Low'], close=df['Close'],length=atrperiod)
+    df["ATR_VALUE"] = ta.atr(high=df['High'], low=df['Low'], close=df['Close'],length=atrperiod,)
     df.reset_index(inplace=True)
     df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
 

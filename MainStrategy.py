@@ -3,7 +3,6 @@ import time
 import traceback
 import pandas as pd
 from pathlib import Path
-
 import pyotp
 from datetime import datetime, timedelta, timezone
 
@@ -327,12 +326,12 @@ def main_strategy():
                 params["order_token"] = token_value
                 params["optioncontract"] = name_value
                 params["TradeAtr"] = float(params['atr'])
-                params['Breakeven'] = ltp + params["TradeAtr"]
+                params['Breakeven'] = params['close'] + params["TradeAtr"]
                 params['Stoploss'] = params['low']
                 params['ep'] = ltp
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
-                orderlog = f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
+                orderlog = f'{timestamp} Buy order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}, atr value={params["TradeAtr"]}, initial sl={params["Stoploss"]} next TSL Level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
@@ -381,12 +380,12 @@ def main_strategy():
                 params["order_token"] = token_value
                 params["optioncontract"] = name_value
                 params["TradeAtr"] = float(params['atr'])
-                params['Breakeven'] = ltp - params["TradeAtr"]
+                params['Breakeven'] = params['close'] - params["TradeAtr"]
                 params['Stoploss'] = params['high']
                 params['ep'] = ltp
                 params['RsiCondition1'] = False
                 params['RsiCondition2'] = False
-                orderlog = f'{timestamp} Sell order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}'
+                orderlog = f'{timestamp} Sell order executed @ {symbol} @ {ltp}, option contract= {params["optioncontract"]}, atr value={params["TradeAtr"]}, initial sl={params["Stoploss"]} next TSL Level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 AliceBlueIntegration.buy(quantity=params["Quantity"], exch="NFO", symbol=symbol, expiry_date=Expiery,
@@ -432,8 +431,8 @@ def main_strategy():
                     float(ltp) >= float(params['Breakeven']) > 0
             ):
                 params['Stoploss'] = params['Stoploss'] + params["TradeAtr"]
-                params['Breakeven'] = float(ltp) + params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}, ltp: {ltp}'
+                params['Breakeven'] = float(params['close']) + params["TradeAtr"]
+                orderlog = f'{timestamp} Tsl point acheived buy trade @ {symbol} stoploss  : {params["Stoploss"]}, ltp: {ltp}, atr value={params["TradeAtr"]}, next TSL Level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
@@ -490,8 +489,8 @@ def main_strategy():
                     float(params['Breakeven']) > 0
             ):
                 params['Stoploss'] = params['Stoploss'] - params["TradeAtr"]
-                params['Breakeven'] = float(ltp) - params["TradeAtr"]
-                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol} stoploss moved to cost to cost : {params["Stoploss"]}, ltp: {ltp}'
+                params['Breakeven'] = float(params['close']) - params["TradeAtr"]
+                orderlog = f'{timestamp} Tsl point acheived sell trade @ {symbol}  stoploss  : {params["Stoploss"]}, ltp: {ltp}, atr value={params["TradeAtr"]}, next TSL Level={params["Breakeven"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
