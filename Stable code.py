@@ -20,6 +20,7 @@ def delete_file_contents(file_name):
         print(f"File {file_name} not found.")
     except Exception as e:
         print(f"An error occurred: {str(e)}")
+
 def get_zerodha_credentials():
     delete_file_contents("OrderLog.txt")
     credentials = {}
@@ -38,13 +39,10 @@ def get_zerodha_credentials():
 
     return credentials
 
-
 credentials_dict = get_zerodha_credentials()
-
 
 def custom_round(price, symbol):
     rounded_price = None
-
     if symbol == "NIFTY":
         last_two_digits = price % 100
         if last_two_digits < 25:
@@ -161,6 +159,8 @@ def determine_min(minstr):
     min = 0
     if minstr == "1m":
         min = 1
+    if minstr == "3m":
+        min = 3
     if minstr == "5m":
         min = 5
     if minstr == "15m":
@@ -169,29 +169,20 @@ def determine_min(minstr):
         min = 30
 
     return min
+def find_scrip_code( symbol_root, expiry):
+    dt_obj = datetime.strptime(expiry, '%d-%m-%Y')
+    formatted_date = dt_obj.strftime('%d %b %Y')
+    name= symbol_root+ " " + formatted_date
+    print(name)
+    df= pd.read_csv("ScripMaster.csv")
+    for index, row in df.iterrows():
+        # print(row['Name'])
+        if (row['Name'] == name):
+            # Return the ScripCode value if conditions are met
+            return row['ScripCode']
+        # Return None if no matching row is found
+    return None
 
-
-def get_option_contract(Symbol, Strike, Option_Type, Instrument_Type, Expiry):
-    df = pd.read_csv("RaveSptrendVwapRsiProject1\\NFO.csv")
-    filtered_df = df[
-        (df['Symbol'] == Symbol) &
-        (df['Strike Price'] == Strike) &
-        (df['Option Type'] == Option_Type) &
-        (df['Instrument Type'] == Instrument_Type) &
-        (df['Expiry Date'] == Expiry)
-        ]
-
-    # Check if any rows match the criteria
-    if not filtered_df.empty:
-        # Assuming 'Token' is the column you want to retrieve
-        token_value = filtered_df['Token'].values[0]
-        return token_value
-    else:
-        print("No matching contract found.")
-        return None
-
-
-# AliceBlueIntegration.option_contract(exch="NFO",symbol='BANKNIFTY',expiry_date="2024-03-27",strike=43300,call=True)
 def main_strategy():
     global result_dict, next_specific_part_time, total_pnl, runningpnl, niftypnl, bankniftypnl
     ExpieryList = []
@@ -202,6 +193,34 @@ def main_strategy():
             timestamp = timestamp.strftime("%d/%m/%Y %H:%M:%S")
             if isinstance(symbol_value, str):
                 ExpieryList = FivePaisaIntegration.get_active_expiery(symbol=symbol)
+                print(ExpieryList)
+                today = datetime.now()
+                present_month_dates = [date for date in ExpieryList if
+                                       datetime.strptime(date, '%Y-%m-%d').month == today.month]
+
+                if present_month_dates:
+                    highest_date = max(present_month_dates)
+                    highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+                    highest_date = highest_date.strftime('%d-%m-%Y')
+                else:
+                    first_day_next_month = today.replace(day=1)
+                    first_day_next_month = first_day_next_month.replace(month=first_day_next_month.month + 1)
+                    # Filter expiry dates for the next month
+                    next_month_dates = [date for date in ExpieryList if
+                                        datetime.strptime(date, '%Y-%m-%d').month == first_day_next_month.month]
+                    # Get the highest date) from the next month dates
+                    print("next_month_dates: ",next_month_dates)
+                    highest_date = next_month_dates[-2]
+                    highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+
+                    # Format the highest date as 'DD-MM-YYYY'
+                    highest_date = highest_date.strftime('%d-%m-%Y')
+
+
+                print(f"Symbol: {symbol},highest_date: {highest_date} ")
+
+
+
                 present_date = datetime.now().strftime('%Y-%m-%d')
 
                 if ExpieryList[0] == present_date:
@@ -211,10 +230,12 @@ def main_strategy():
 
                 # print(f"Symbol= {symbol}, exp={Expiery}")
                 if params['Symbol'] == "NIFTY":
-                    token = 36612
+                    token=find_scrip_code(symbol_root="NIFTY", expiry=highest_date)
+
 
                 if params['Symbol'] == "BANKNIFTY":
-                    token = 36611
+                    token=find_scrip_code(symbol_root="BANKNIFTY", expiry=highest_date)
+
 
             if datetime.now() >= params["runtime"]:
                 try:
@@ -230,12 +251,9 @@ def main_strategy():
                                                                     symbol=params['Symbol'])
                     # print(f"sym={symbol}, data ={data}")
                     last_two_rows = data.tail(2)
+                    print("last_two_rows: ", last_two_rows)
                     second_last_candle = last_two_rows.iloc[-2]
                     last_candle = last_two_rows.iloc[-1]
-
-
-                    print("last_two_rows: ", last_two_rows)
-
                     # print(last_two_rows)
                     candletime=last_candle['Datetime']
                     params["candletime"] = candletime
@@ -580,14 +598,6 @@ def time_based_exit():
     except Exception as e:
         print("Error happened in Main strategy loop: ", str(e))
         traceback.print_exc()
-
-
-# print(AliceBlueIntegration.chek())
-# res=AliceBlueIntegration.buyexit(quantity=1, exch="NFO", symbol="BANKNIFTY", expiry_date="2024-03-27",
-#                                      strike=43300, call=True,producttype="I")
-#
-# print(res)
-
 
 while True:
     StartTime = credentials_dict.get('StartTime')
