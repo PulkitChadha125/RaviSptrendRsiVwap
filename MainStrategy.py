@@ -135,6 +135,7 @@ def get_user_settings():
                 "candletime":None,
                 "token":None,
                 "runtoken":False,
+                "TradeTime":None,
 
             }
             result_dict[row['Symbol']] = symbol_dict
@@ -326,7 +327,8 @@ def main_strategy():
                     params['supertrendvalue1']== 1 and
                     float(params['close']) > float(params['vwap']) and
                     params["TradingEnable"]== True and
-                    params["BUY"] == False
+                    params["BUY"] == False and
+                    params["TradeTime"] != params["candletime"]
             ):
 
 
@@ -338,6 +340,7 @@ def main_strategy():
                 params['Trade'] = "BUY"
                 params["BUY"] = True
                 params["SHORT"] = False
+                params["TradeTime"] = params["candletime"]
                 if params["OPTION_CONTRACT_TYPE"] == "ATM":
                     strike = custom_round(int(float(ltp)), symbol)
                     callstrike = strike
@@ -381,7 +384,9 @@ def main_strategy():
                     params['supertrendvalue1'] == -1 and
                     float(params['close']) < float(params['vwap']) and
                     params["TradingEnable"] == True and
-                    params["SHORT"] == False
+                    params["SHORT"] == False and
+                    params["TradeTime"] != params["candletime"]
+
             ):
 
                 if params['INITIAL_TRADE'] == "BUY":
@@ -409,6 +414,7 @@ def main_strategy():
                 params["BUY"] = False
                 params["SHORT"] = True
                 params["currstrike"] = params["putstrike"]
+                params["TradeTime"] = params["candletime"]
                 result = AliceBlueIntegration.option_contract(exch="NFO", symbol=symbol, expiry_date=Expiery,
                                                               strike=params["putstrike"], call=False)
                 token_value = result.token

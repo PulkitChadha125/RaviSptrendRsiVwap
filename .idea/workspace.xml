@@ -6,6 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="fdc5e58d-ab20-4d4a-bce0-66c10272d055" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BANKNIFTY.csv" beforeDir="false" afterPath="$PROJECT_DIR$/BANKNIFTY.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MainStrategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/MainStrategy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NIFTY.csv" beforeDir="false" afterPath="$PROJECT_DIR$/NIFTY.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/OrderLog.txt" beforeDir="false" afterPath="$PROJECT_DIR$/OrderLog.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Stable code.py" beforeDir="false" afterPath="$PROJECT_DIR$/Stable code.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TradeSettings.csv" beforeDir="false" afterPath="$PROJECT_DIR$/TradeSettings.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +86,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Stable code.py</url>
-          <line>244</line>
+          <line>245</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>
