@@ -22,10 +22,10 @@ def delete_file_contents(file_name):
         print(f"An error occurred: {str(e)}")
 
 def get_zerodha_credentials():
-    delete_file_contents("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\OrderLog.txt")
+    delete_file_contents("OrderLog.txt")
     credentials = {}
     try:
-        df = pd.read_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\MainSettings.csv')
+        df = pd.read_csv('MainSettings.csv')
         for index, row in df.iterrows():
             title = row['Title']
             value = row['Value']
@@ -68,7 +68,7 @@ def custom_round(price, symbol):
 
 
 def write_to_order_logs(message):
-    with open('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\OrderLog.txt', 'a') as file:  # Open the file in append mode
+    with open('OrderLog.txt', 'a') as file:  # Open the file in append mode
         file.write(message + '\n')
 
 
@@ -81,7 +81,7 @@ result_dict = {}
 def get_user_settings():
     global result_dict
     try:
-        csv_path = 'C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\TradeSettings.csv'
+        csv_path = 'TradeSettings.csv'
         df = pd.read_csv(csv_path)
         df.columns = df.columns.str.strip()
         result_dict = {}
@@ -133,10 +133,8 @@ def get_user_settings():
                 "BUY": False,
                 "SHORT": False,
                 "candletime":None,
-                "TradeTime":None,
                 "token":None,
                 "runtoken":False,
-
 
             }
             result_dict[row['Symbol']] = symbol_dict
@@ -178,7 +176,7 @@ def find_scrip_code( symbol_root, expiry):
     formatted_date = dt_obj.strftime('%d %b %Y')
     name= symbol_root+ " " + formatted_date
     print(name)
-    df= pd.read_csv("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\ScripMaster.csv")
+    df= pd.read_csv("ScripMaster.csv")
     for index, row in df.iterrows():
         # print(row['Name'])
         if (row['Name'] == name):
@@ -243,12 +241,14 @@ def main_strategy():
                 # print(f"Symbol= {symbol}, exp={Expiery}")
                 if params['Symbol'] == "NIFTY" and params["runtoken"]==False:
                     token=find_scrip_code(symbol_root="NIFTY", expiry=highest_date)
+                    print("NIFTY: ",token)
                     params["token"] = token
                     params["runtoken"] = True
 
 
                 if params['Symbol'] == "BANKNIFTY" and params["runtoken"]==False:
                     token=find_scrip_code(symbol_root="BANKNIFTY", expiry=highest_date)
+                    print("BANKNIFTY: ",token)
                     params["token"] = token
                     params["runtoken"] = True
 
@@ -308,6 +308,8 @@ def main_strategy():
                     params['runtime'] = next_specific_part_time
 
 
+
+
                 except Exception as e:
                     print("Error happened in Main strategy loop: ", str(e))
                     traceback.print_exc()
@@ -324,8 +326,7 @@ def main_strategy():
                     params['supertrendvalue1']== 1 and
                     float(params['close']) > float(params['vwap']) and
                     params["TradingEnable"]== True and
-                    params["BUY"] == False and
-                    params["candletime"] != params["TradeTime"]
+                    params["BUY"] == False
             ):
 
 
@@ -337,7 +338,6 @@ def main_strategy():
                 params['Trade'] = "BUY"
                 params["BUY"] = True
                 params["SHORT"] = False
-                params["TradeTime"]=params["candletime"]
                 if params["OPTION_CONTRACT_TYPE"] == "ATM":
                     strike = custom_round(int(float(ltp)), symbol)
                     callstrike = strike
@@ -381,8 +381,7 @@ def main_strategy():
                     params['supertrendvalue1'] == -1 and
                     float(params['close']) < float(params['vwap']) and
                     params["TradingEnable"] == True and
-                    params["SHORT"] == False and
-                    params["candletime"] != params["TradeTime"]
+                    params["SHORT"] == False
             ):
 
                 if params['INITIAL_TRADE'] == "BUY":
@@ -409,7 +408,6 @@ def main_strategy():
                 params['Trade'] = "SHORT"
                 params["BUY"] = False
                 params["SHORT"] = True
-                params["candletime"] = params["TradeTime"]
                 params["currstrike"] = params["putstrike"]
                 result = AliceBlueIntegration.option_contract(exch="NFO", symbol=symbol, expiry_date=Expiery,
                                                               strike=params["putstrike"], call=False)
