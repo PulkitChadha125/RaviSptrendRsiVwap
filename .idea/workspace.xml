@@ -7,11 +7,12 @@
     <list default="true" id="fdc5e58d-ab20-4d4a-bce0-66c10272d055" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BANKNIFTY.csv" beforeDir="false" afterPath="$PROJECT_DIR$/BANKNIFTY.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MainSettings.csv" beforeDir="false" afterPath="$PROJECT_DIR$/MainSettings.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FivePaisaIntegration.py" beforeDir="false" afterPath="$PROJECT_DIR$/FivePaisaIntegration.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MainStrategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/MainStrategy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFO.csv" beforeDir="false" afterPath="$PROJECT_DIR$/NFO.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NIFTY.csv" beforeDir="false" afterPath="$PROJECT_DIR$/NIFTY.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Stable code.py" beforeDir="false" afterPath="$PROJECT_DIR$/Stable code.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TradeSettings.csv" beforeDir="false" afterPath="$PROJECT_DIR$/TradeSettings.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +28,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Stable code.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -53,8 +57,8 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "D:/Desktop/python projects/Algofox Premium Scanner",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+    "last_opened_file_path": "D:/Desktop/python projects/BigBoss7StartPoject",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
   }
 }]]></component>
   <component name="SharedIndexes">
@@ -77,5 +81,16 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Stable code.py</url>
+          <line>244</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

@@ -22,10 +22,10 @@ def delete_file_contents(file_name):
         print(f"An error occurred: {str(e)}")
 
 def get_zerodha_credentials():
-    delete_file_contents("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\OrderLog.txt")
+    delete_file_contents("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\OrderLog.txt")
     credentials = {}
     try:
-        df = pd.read_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\MainSettings.csv')
+        df = pd.read_csv('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\MainSettings.csv')
         for index, row in df.iterrows():
             title = row['Title']
             value = row['Value']
@@ -43,7 +43,6 @@ credentials_dict = get_zerodha_credentials()
 
 def custom_round(price, symbol):
     rounded_price = None
-
     if symbol == "NIFTY":
         last_two_digits = price % 100
         if last_two_digits < 25:
@@ -67,18 +66,26 @@ def custom_round(price, symbol):
 
     return rounded_price
 
+
 def write_to_order_logs(message):
-    with open('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\OrderLog.txt', 'a') as file:  # Open the file in append mode
+    with open('C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\OrderLog.txt', 'a') as file:  # Open the file in append mode
         file.write(message + '\n')
 
+
+
+
+
 result_dict = {}
+
+
 def get_user_settings():
     global result_dict
     try:
-        csv_path = 'C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\TradeSettings.csv'
+        csv_path = 'C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\TradeSettings.csv'
         df = pd.read_csv(csv_path)
         df.columns = df.columns.str.strip()
         result_dict = {}
+
         for index, row in df.iterrows():
             # Create a nested dictionary for each symbol
             symbol_dict = {
@@ -125,7 +132,11 @@ def get_user_settings():
                 "TradingEnable": True,
                 "BUY": False,
                 "SHORT": False,
-                "candletime":None
+                "candletime":None,
+                "TradeTime":None,
+                "token":None,
+                "runtoken":False,
+
 
             }
             result_dict[row['Symbol']] = symbol_dict
@@ -133,7 +144,10 @@ def get_user_settings():
     except Exception as e:
         print("Error happened in fetching symbol", str(e))
 
+
 get_user_settings()
+
+
 def round_down_to_interval(dt, interval_minutes):
     remainder = dt.minute % interval_minutes
     minutes_to_current_boundary = remainder
@@ -143,6 +157,7 @@ def round_down_to_interval(dt, interval_minutes):
     rounded_dt = rounded_dt.replace(second=0, microsecond=0)
 
     return rounded_dt
+
 
 def determine_min(minstr):
     min = 0
@@ -156,13 +171,14 @@ def determine_min(minstr):
         min = 15
     if minstr == "30m":
         min = 30
+
     return min
 def find_scrip_code( symbol_root, expiry):
     dt_obj = datetime.strptime(expiry, '%d-%m-%Y')
     formatted_date = dt_obj.strftime('%d %b %Y')
     name= symbol_root+ " " + formatted_date
     print(name)
-    df= pd.read_csv("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\RaveSptrendVwapRsiProject1\\ScripMaster.csv")
+    df= pd.read_csv("C:\\Users\\Administrator\\Desktop\\RaveSptrendVwapRsiProject1\\ScripMaster.csv")
     for index, row in df.iterrows():
         # print(row['Name'])
         if (row['Name'] == name):
@@ -181,16 +197,23 @@ def main_strategy():
             timestamp = timestamp.strftime("%d/%m/%Y %H:%M:%S")
             if isinstance(symbol_value, str):
                 ExpieryList = FivePaisaIntegration.get_active_expiery(symbol=symbol)
-                ExpieryList = FivePaisaIntegration.get_active_expiery(symbol=symbol)
                 print(ExpieryList)
                 today = datetime.now()
                 present_month_dates = [date for date in ExpieryList if
                                        datetime.strptime(date, '%Y-%m-%d').month == today.month]
 
                 if present_month_dates:
-                    highest_date = max(present_month_dates)
-                    highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
-                    highest_date = highest_date.strftime('%d-%m-%Y')
+                    # highest_date = max(present_month_dates)
+                    # highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+                    # highest_date = highest_date.strftime('%d-%m-%Y')
+                    if  params['Symbol'] == "NIFTY":
+                        highest_date = present_month_dates[-1]
+                        highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+                        highest_date = highest_date.strftime('%d-%m-%Y')
+                    if  params['Symbol'] == "BANKNIFTY":
+                        highest_date = present_month_dates[-2]
+                        highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+                        highest_date = highest_date.strftime('%d-%m-%Y')
                 else:
                     first_day_next_month = today.replace(day=1)
                     first_day_next_month = first_day_next_month.replace(month=first_day_next_month.month + 1)
@@ -198,14 +221,18 @@ def main_strategy():
                     next_month_dates = [date for date in ExpieryList if
                                         datetime.strptime(date, '%Y-%m-%d').month == first_day_next_month.month]
                     # Get the highest date) from the next month dates
-                    print("next_month_dates: ", next_month_dates)
+                    print("next_month_dates: ",next_month_dates)
                     highest_date = next_month_dates[-2]
                     highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
 
                     # Format the highest date as 'DD-MM-YYYY'
                     highest_date = highest_date.strftime('%d-%m-%Y')
 
+
                 print(f"Symbol: {symbol},highest_date: {highest_date} ")
+
+
+
                 present_date = datetime.now().strftime('%Y-%m-%d')
 
                 if ExpieryList[0] == present_date:
@@ -214,11 +241,17 @@ def main_strategy():
                     Expiery = ExpieryList[0]
 
                 # print(f"Symbol= {symbol}, exp={Expiery}")
-                if params['Symbol'] == "NIFTY":
-                    token = find_scrip_code(symbol_root="NIFTY", expiry=highest_date)
+                if params['Symbol'] == "NIFTY" and params["runtoken"]==False:
+                    token=find_scrip_code(symbol_root="NIFTY", expiry=highest_date)
+                    params["token"] = token
+                    params["runtoken"] = True
 
-                if params['Symbol'] == "BANKNIFTY":
-                    token = find_scrip_code(symbol_root="BANKNIFTY", expiry=highest_date)
+
+                if params['Symbol'] == "BANKNIFTY" and params["runtoken"]==False:
+                    token=find_scrip_code(symbol_root="BANKNIFTY", expiry=highest_date)
+                    params["token"] = token
+                    params["runtoken"] = True
+
 
             if datetime.now() >= params["runtime"]:
                 try:
@@ -226,16 +259,18 @@ def main_strategy():
                         time.sleep(int(1))
 
                     data = FivePaisaIntegration.get_historical_data(timframe=str(params['Timeframe']),
-                                                                    token=token,
+                                                                    token=params["token"],
                                                                     RSIPeriod=params['RSI_PERIOD'],
                                                                     Spperios=params['SUPERTREND_PERIOD'],
                                                                     spmul=params['SUPERTREND_MULTIPLIER'],
                                                                     atrperiod=params['ATR_PERIOD'],
                                                                     symbol=params['Symbol'])
+                    # print(f"sym={symbol}, data ={data}")
                     last_two_rows = data.tail(2)
+                    print("last_two_rows: ", last_two_rows)
                     second_last_candle = last_two_rows.iloc[-2]
                     last_candle = last_two_rows.iloc[-1]
-                    print("last_two_rows: ", last_two_rows)
+                    # print(last_two_rows)
                     candletime=last_candle['Datetime']
                     params["candletime"] = candletime
                     rsi1 = last_candle['RSI']
@@ -277,7 +312,7 @@ def main_strategy():
                     print("Error happened in Main strategy loop: ", str(e))
                     traceback.print_exc()
 
-            ltp = FivePaisaIntegration.get_ltp(token)
+            ltp = FivePaisaIntegration.get_ltp(params["token"])
             print(
                 f"Candletime: {params['candletime'] }, Symbol:{symbol} , ltp:{ltp} ,Rsi1= {params['rsi1']},Rsi2= {params['rsi2']},supertrendvalue1= {params['supertrendvalue1']},"
                 f"vwap= {params['vwap']},close={params['close']},params['INITIAL_TRADE']: {params['INITIAL_TRADE']},buy={params['BUY'] },sell={params['SHORT']}"
@@ -289,8 +324,10 @@ def main_strategy():
                     params['supertrendvalue1']== 1 and
                     float(params['close']) > float(params['vwap']) and
                     params["TradingEnable"]== True and
-                    params["BUY"] == False
+                    params["BUY"] == False and
+                    params["candletime"] != params["TradeTime"]
             ):
+
 
                 if params['INITIAL_TRADE'] == "SHORT":
                     AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
@@ -300,6 +337,7 @@ def main_strategy():
                 params['Trade'] = "BUY"
                 params["BUY"] = True
                 params["SHORT"] = False
+                params["TradeTime"]=params["candletime"]
                 if params["OPTION_CONTRACT_TYPE"] == "ATM":
                     strike = custom_round(int(float(ltp)), symbol)
                     callstrike = strike
@@ -343,7 +381,8 @@ def main_strategy():
                     params['supertrendvalue1'] == -1 and
                     float(params['close']) < float(params['vwap']) and
                     params["TradingEnable"] == True and
-                    params["SHORT"] == False
+                    params["SHORT"] == False and
+                    params["candletime"] != params["TradeTime"]
             ):
 
                 if params['INITIAL_TRADE'] == "BUY":
@@ -370,6 +409,7 @@ def main_strategy():
                 params['Trade'] = "SHORT"
                 params["BUY"] = False
                 params["SHORT"] = True
+                params["candletime"] = params["TradeTime"]
                 params["currstrike"] = params["putstrike"]
                 result = AliceBlueIntegration.option_contract(exch="NFO", symbol=symbol, expiry_date=Expiery,
                                                               strike=params["putstrike"], call=False)
@@ -391,6 +431,7 @@ def main_strategy():
 
                 params["INITIAL_TRADE"] = "SHORT"
 
+            #         exit logic coding
             if (
                     params['Trade'] == "BUY" and
                     params['supertrendvalue1'] == -1 and
@@ -506,6 +547,9 @@ def main_strategy():
                 print(orderlog)
                 write_to_order_logs(orderlog)
 
+            #          rsi based exit
+
+
             if (
                     params['Trade'] == "BUY" and
                     float(params['rsi2']) >= float(params["RSI_EXIT_BUY"]) and
@@ -525,6 +569,8 @@ def main_strategy():
                 orderlog = f'{timestamp} Rsi Exit Buy  @ {symbol}, ltp = {ltp}, option contract= {params["optioncontract"]}'
                 print(orderlog)
                 write_to_order_logs(orderlog)
+
+
 
             if (
                     params['Trade'] == "SHORT" and
@@ -563,9 +609,11 @@ def time_based_exit():
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 params["TradingEnable"] = False
+
                 AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                              expiry_date=Expiery,
                                              strike=params["currstrike"], call=False, producttype=params["producttype"])
+
 
     except Exception as e:
         print("Error happened in Main strategy loop: ", str(e))

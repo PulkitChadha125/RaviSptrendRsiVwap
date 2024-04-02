@@ -29,6 +29,31 @@ def login():
     client.get_totp_session(client_code=51505350,totp=twofa,pin=123456)
     client.get_oauth_session('Your Response Token')
     print(client.get_access_token())
+
+def round_down_to_interval(dt, interval_minutes):
+    remainder = dt.minute % interval_minutes
+    minutes_to_current_boundary = remainder
+
+    rounded_dt = dt - timedelta(minutes=minutes_to_current_boundary)
+
+    rounded_dt = rounded_dt.replace(second=0, microsecond=0)
+
+    return rounded_dt
+
+def determine_min(minstr):
+    min = 0
+    if minstr == "1m":
+        min = 1
+    if minstr == "3m":
+        min = 3
+    if minstr == "5m":
+        min = 5
+    if minstr == "15m":
+        min = 15
+    if minstr == "30m":
+        min = 30
+
+    return min
 def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,symbol):
     global client
     current_time = datetime.now()
@@ -45,13 +70,12 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
         delta_minutes = 15
         delta_minutes2 = 30
 
-    desired_time1 = current_time - timedelta(minutes=delta_minutes)
-    desired_time1 = desired_time1.replace(second=0)
-    desired_time_str1 = desired_time1.strftime('%Y-%m-%d %H:%M:%S')
-
-    desired_time2 = current_time - timedelta(minutes=delta_minutes2)
-    desired_time2 = desired_time2.replace(second=0)
-    desired_time_str2 = desired_time2.strftime('%Y-%m-%d %H:%M:%S')
+    next_specific_part_time = datetime.now() - timedelta(
+        seconds=determine_min(timframe) * 60)
+    desired_time_str1 = round_down_to_interval(next_specific_part_time,
+                                                     determine_min(timframe))
+    desired_time_str2=desired_time_str1- timedelta(
+        seconds=determine_min(timframe) * 60)
 
     from_time = datetime.now() - timedelta(days=6)
     to_time = datetime.now()
@@ -71,7 +95,6 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
     df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
 
-
     if symbol=="NIFTY":
         df.to_csv('NIFTY.csv', index=False)
     if symbol=="BANKNIFTY":
@@ -79,8 +102,9 @@ def get_historical_data(timframe, token, RSIPeriod, Spperios, spmul, atrperiod,s
 
     last_3_rows = df.tail(3)
     desired_rows = last_3_rows[
-        (last_3_rows['Datetime'] == desired_time_str1) | (last_3_rows['Datetime'] == desired_time_str2)]
-
+        (pd.to_datetime(last_3_rows['Datetime']) == desired_time_str1) |
+        (pd.to_datetime(last_3_rows['Datetime']) == desired_time_str2)
+        ]
     return desired_rows
 
 

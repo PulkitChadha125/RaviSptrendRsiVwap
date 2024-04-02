@@ -132,7 +132,9 @@ def get_user_settings():
                 "TradingEnable": True,
                 "BUY": False,
                 "SHORT": False,
-                "candletime":None
+                "candletime":None,
+                "token":None,
+                "runtoken":False,
 
             }
             result_dict[row['Symbol']] = symbol_dict
@@ -199,9 +201,17 @@ def main_strategy():
                                        datetime.strptime(date, '%Y-%m-%d').month == today.month]
 
                 if present_month_dates:
-                    highest_date = max(present_month_dates)
-                    highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
-                    highest_date = highest_date.strftime('%d-%m-%Y')
+                    # highest_date = max(present_month_dates)
+                    # highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+                    # highest_date = highest_date.strftime('%d-%m-%Y')
+                    if  params['Symbol'] == "NIFTY":
+                        highest_date = present_month_dates[-1]
+                        highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+                        highest_date = highest_date.strftime('%d-%m-%Y')
+                    if  params['Symbol'] == "BANKNIFTY":
+                        highest_date = present_month_dates[-2]
+                        highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
+                        highest_date = highest_date.strftime('%d-%m-%Y')
                 else:
                     first_day_next_month = today.replace(day=1)
                     first_day_next_month = first_day_next_month.replace(month=first_day_next_month.month + 1)
@@ -229,12 +239,18 @@ def main_strategy():
                     Expiery = ExpieryList[0]
 
                 # print(f"Symbol= {symbol}, exp={Expiery}")
-                if params['Symbol'] == "NIFTY":
+                if params['Symbol'] == "NIFTY" and params["runtoken"]==False:
                     token=find_scrip_code(symbol_root="NIFTY", expiry=highest_date)
+                    print("NIFTY: ",token)
+                    params["token"] = token
+                    params["runtoken"] = True
 
 
-                if params['Symbol'] == "BANKNIFTY":
+                if params['Symbol'] == "BANKNIFTY" and params["runtoken"]==False:
                     token=find_scrip_code(symbol_root="BANKNIFTY", expiry=highest_date)
+                    print("BANKNIFTY: ",token)
+                    params["token"] = token
+                    params["runtoken"] = True
 
 
             if datetime.now() >= params["runtime"]:
@@ -243,7 +259,7 @@ def main_strategy():
                         time.sleep(int(1))
 
                     data = FivePaisaIntegration.get_historical_data(timframe=str(params['Timeframe']),
-                                                                    token=token,
+                                                                    token=params["token"],
                                                                     RSIPeriod=params['RSI_PERIOD'],
                                                                     Spperios=params['SUPERTREND_PERIOD'],
                                                                     spmul=params['SUPERTREND_MULTIPLIER'],
@@ -292,11 +308,13 @@ def main_strategy():
                     params['runtime'] = next_specific_part_time
 
 
+
+
                 except Exception as e:
                     print("Error happened in Main strategy loop: ", str(e))
                     traceback.print_exc()
 
-            ltp = FivePaisaIntegration.get_ltp(token)
+            ltp = FivePaisaIntegration.get_ltp(params["token"])
             print(
                 f"Candletime: {params['candletime'] }, Symbol:{symbol} , ltp:{ltp} ,Rsi1= {params['rsi1']},Rsi2= {params['rsi2']},supertrendvalue1= {params['supertrendvalue1']},"
                 f"vwap= {params['vwap']},close={params['close']},params['INITIAL_TRADE']: {params['INITIAL_TRADE']},buy={params['BUY'] },sell={params['SHORT']}"
