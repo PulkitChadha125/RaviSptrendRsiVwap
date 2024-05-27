@@ -22,10 +22,10 @@ def delete_file_contents(file_name):
         print(f"An error occurred: {str(e)}")
 
 def get_zerodha_credentials():
-    delete_file_contents("OrderLog.txt")
+    # delete_file_contents("C:\\Users\\Administrator\\OneDrive\\Desktop\\RaviSptrendRsiVwap-master\\RaviSptrendRsiVwap-master\\OrderLog.txt")
     credentials = {}
     try:
-        df = pd.read_csv('MainSettings.csv')
+        df = pd.read_csv('C:\\Users\\Administrator\\OneDrive\\Desktop\\RaviSptrendRsiVwap-master\\RaviSptrendRsiVwap-master\\MainSettings.csv')
         for index, row in df.iterrows():
             title = row['Title']
             value = row['Value']
@@ -68,7 +68,7 @@ def custom_round(price, symbol):
 
 
 def write_to_order_logs(message):
-    with open('OrderLog.txt', 'a') as file:  # Open the file in append mode
+    with open('C:\\Users\\Administrator\\OneDrive\\Desktop\\RaviSptrendRsiVwap-master\\RaviSptrendRsiVwap-master\\OrderLog.txt', 'a') as file:  # Open the file in append mode
         file.write(message + '\n')
 
 
@@ -81,7 +81,7 @@ result_dict = {}
 def get_user_settings():
     global result_dict
     try:
-        csv_path = 'TradeSettings.csv'
+        csv_path = 'C:\\Users\\Administrator\\OneDrive\\Desktop\\RaviSptrendRsiVwap-master\\RaviSptrendRsiVwap-master\\TradeSettings.csv'
         df = pd.read_csv(csv_path)
         df.columns = df.columns.str.strip()
         result_dict = {}
@@ -136,6 +136,7 @@ def get_user_settings():
                 "token":None,
                 "runtoken":False,
                 "TradeTime":None,
+                "Expiery":None
 
             }
             result_dict[row['Symbol']] = symbol_dict
@@ -177,7 +178,7 @@ def find_scrip_code( symbol_root, expiry):
     formatted_date = dt_obj.strftime('%d %b %Y')
     name= symbol_root+ " " + formatted_date
     print(name)
-    df= pd.read_csv("ScripMaster.csv")
+    df= pd.read_csv("C:\\Users\\Administrator\\OneDrive\\Desktop\\RaviSptrendRsiVwap-master\\RaviSptrendRsiVwap-master\\ScripMaster.csv")
     for index, row in df.iterrows():
         # print(row['Name'])
         if (row['Name'] == name):
@@ -238,6 +239,8 @@ def main_strategy():
                     Expiery = ExpieryList[1]
                 else:
                     Expiery = ExpieryList[0]
+
+                params["Expiery"] =Expiery
 
                 # print(f"Symbol= {symbol}, exp={Expiery}")
                 if params['Symbol'] == "NIFTY" and params["runtoken"]==False:
@@ -604,19 +607,26 @@ def time_based_exit():
             symbol_value = params['Symbol']
             timestamp = datetime.now()
             timestamp = timestamp.strftime("%d/%m/%Y %H:%M:%S")
+            print(f"Initiating Time based exit @ {symbol}")
             if isinstance(symbol_value, str) and params["TradingEnable"] == True and params[
                 'INITIAL_TRADE'] is not None:
-                Expiery = str(params['Expiery'])
-                Expiery = datetime.strptime(Expiery, "%d-%m-%Y")
-                Expiery = Expiery.strftime("%Y-%m-%d")
+                Expiery =params["Expiery"]
+
                 orderlog = f"{timestamp} {params['Symbol']}: Time based exit occured no more trades will be taken "
                 print(orderlog)
                 write_to_order_logs(orderlog)
                 params["TradingEnable"] = False
 
-                AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
-                                             expiry_date=Expiery,
-                                             strike=params["currstrike"], call=False, producttype=params["producttype"])
+                if params['INITIAL_TRADE'] == "BUY":
+                    AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
+                                                 expiry_date=Expiery,
+                                                 strike=params["currstrike"], call=True,
+                                                 producttype=params["producttype"])
+
+                if params['INITIAL_TRADE'] == "SHORT":
+                    AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
+                                                 expiry_date=Expiery,
+                                                 strike=params["currstrike"], call=False, producttype=params["producttype"])
 
 
     except Exception as e:

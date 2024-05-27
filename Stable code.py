@@ -202,38 +202,26 @@ def main_strategy():
                                        datetime.strptime(date, '%Y-%m-%d').month == today.month]
 
                 if present_month_dates:
-                    # highest_date = max(present_month_dates)
-                    # highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
-                    # highest_date = highest_date.strftime('%d-%m-%Y')
                     if  params['Symbol'] == "NIFTY":
                         highest_date = present_month_dates[-1]
                         highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
                         highest_date = highest_date.strftime('%d-%m-%Y')
                     if  params['Symbol'] == "BANKNIFTY":
-                        highest_date = present_month_dates[-2]
+                        highest_date = present_month_dates[-1]
                         highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
                         highest_date = highest_date.strftime('%d-%m-%Y')
                 else:
                     first_day_next_month = today.replace(day=1)
                     first_day_next_month = first_day_next_month.replace(month=first_day_next_month.month + 1)
-                    # Filter expiry dates for the next month
                     next_month_dates = [date for date in ExpieryList if
                                         datetime.strptime(date, '%Y-%m-%d').month == first_day_next_month.month]
-                    # Get the highest date) from the next month dates
                     print("next_month_dates: ",next_month_dates)
-                    highest_date = next_month_dates[-2]
+                    highest_date = next_month_dates[-1]
                     highest_date = datetime.strptime(highest_date, '%Y-%m-%d')
-
-                    # Format the highest date as 'DD-MM-YYYY'
                     highest_date = highest_date.strftime('%d-%m-%Y')
 
-
                 print(f"Symbol: {symbol},highest_date: {highest_date} ")
-
-
-
                 present_date = datetime.now().strftime('%Y-%m-%d')
-
                 if ExpieryList[0] == present_date:
                     Expiery = ExpieryList[1]
                 else:
@@ -266,7 +254,6 @@ def main_strategy():
                                                                     spmul=params['SUPERTREND_MULTIPLIER'],
                                                                     atrperiod=params['ATR_PERIOD'],
                                                                     symbol=params['Symbol'])
-                    # print(f"sym={symbol}, data ={data}")
                     last_two_rows = data.tail(2)
                     print("last_two_rows: ", last_two_rows)
                     second_last_candle = last_two_rows.iloc[-2]
@@ -303,14 +290,9 @@ def main_strategy():
 
                     next_specific_part_time = datetime.now() + timedelta(
                         seconds=determine_min(params["Timeframe"]) * 60)
-                    next_specific_part_time = round_down_to_interval(next_specific_part_time,
-                                                                     determine_min(params["Timeframe"]))
+                    next_specific_part_time = round_down_to_interval(next_specific_part_time,determine_min(params["Timeframe"]))
                     print("Next datafetch time = ", next_specific_part_time)
                     params['runtime'] = next_specific_part_time
-
-
-
-
                 except Exception as e:
                     print("Error happened in Main strategy loop: ", str(e))
                     traceback.print_exc()
@@ -330,8 +312,6 @@ def main_strategy():
                     params["BUY"] == False and
                     params["TradeTime"] != params["candletime"]
             ):
-
-
                 if params['INITIAL_TRADE'] == "SHORT":
                     AliceBlueIntegration.buyexit(quantity=params["Quantity"], exch="NFO", symbol=symbol,
                                                  expiry_date=Expiery,

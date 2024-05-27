@@ -1,5 +1,0 @@
-02/04/2024 14:40:02 Sell order executed @ BANKNIFTY @ 47885.15, option contract= BANKNIFTY03APR24P47900, atr value=35.3932431416279, initial sl=47900.7 next TSL Level=47849.756756858376
-02/04/2024 14:43:39 Stoploss executed @ sell trade @ BANKNIFTY, ltp = 47905.0, option contract= BANKNIFTY03APR24P47900
-02/04/2024 14:50:01 Sell order executed @ BANKNIFTY @ 47871.15, option contract= BANKNIFTY03APR24P47900, atr value=34.4741140240674, initial sl=47900.0 next TSL Level=47836.675885975936
-02/04/2024 14:55:01 Buy order executed @ NIFTY @ 22574.15, option contract= NIFTY04APR24C22550, atr value=11.694828193180179, initial sl=22558.55 next TSL Level=22586.69482819318
-02/04/2024 14:55:38 Stoploss executed @ sell trade @ BANKNIFTY, ltp = 47900.0, option contract= BANKNIFTY03APR24P47900
